@@ -1,15 +1,25 @@
 package ru.bukharov.blockchain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
-public class Blockchain {
+public class Blockchain implements Serializable {
+    @Setter
+    private int zeros;
+    @Getter
     private List<Block> blocks = new ArrayList<>();
 
+    public Blockchain(int zeros) {
+        this.zeros = zeros;
+    }
+
     public void addBlock() {
-        Block block = new Block(blocks.size() + 1, new Date(), getLastHash());
+        Block block = new Block(blocks.size() + 1, new Date(), getLastHash(), zeros);
         blocks.add(block);
     }
 
@@ -28,10 +38,6 @@ public class Blockchain {
             curBlock = nextBlock;
         }
         return true;
-    }
-
-    List<Block> getBlocks() {
-        return blocks;
     }
 
     private String getLastHash() {
