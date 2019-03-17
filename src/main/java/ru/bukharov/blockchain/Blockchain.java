@@ -8,6 +8,9 @@ import lombok.Getter;
 
 public class Blockchain implements Serializable {
     private static final Block ZERO_BLOCK = new Block(0, 0, "0", 0);
+    private static final int SECOND = 1000;
+    private static final int LOW_TIME_LIMIT = 1 * SECOND;
+    private static final int HIGH_TIME_LIMIT = 10 * SECOND;
 
     private final int limit;
     @Getter
@@ -28,6 +31,8 @@ public class Blockchain implements Serializable {
         }
 
         blocks.add(block);
+
+        updateZeros(block);
         BlockchainEvent event = BlockchainEvent.builder()
                 .state(getState())
                 .active(blocks.size() < limit)
@@ -43,6 +48,22 @@ public class Blockchain implements Serializable {
 
     public void registerListener(BlockchainListener listener) {
         listeners.add(listener);
+    }
+
+    private void updateZeros(Block block) {
+        long generatedTime = block.getGeneratedTime();
+        String comment;
+
+        if (generatedTime < LOW_TIME_LIMIT) {
+            zeros++;
+            comment = "The zeros number was increased to " + zeros;
+        } else if (generatedTime > HIGH_TIME_LIMIT) {
+            zeros--;
+            comment = "The zeros number was decreased to " + zeros;
+        } else {
+            comment = "The zeros number stays the same";
+        }
+        block.setComment(comment);
     }
 
     private void notifyListeners(BlockchainEvent event) {

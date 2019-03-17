@@ -14,6 +14,7 @@ class Block implements Serializable {
 
     private String minerName;
     private long generatedTime;
+    private String comment;
 
     public String getHash() {
         return StringUtils.applySha256(id  + timestamp + previousHash + magic);
@@ -26,7 +27,8 @@ class Block implements Serializable {
                 "Hash of the previous block: " + previousHash + "\n" +
                 "Hash of the block: " + getHash() + "\n" +
                 "Miner: " + minerName + "\n" +
-                "Generated time: " + generatedTime + "\n";
+                "Generated time: " + generatedTime + "\n" +
+                "Comment: " + comment + "\n";
     }
 
 }

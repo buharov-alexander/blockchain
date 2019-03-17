@@ -10,19 +10,19 @@ public class BlockchainTest {
 
     @Test
     public void oneMiner() throws InterruptedException {
-        Blockchain blockchain = new Blockchain(1, 5);
+        Blockchain blockchain = new Blockchain(0, 7);
         Miner miner = new Miner("Miner#1", blockchain);
 
         miner.run();
         miner.join();
 
         printBlockchain(blockchain);
-        Assert.assertEquals(blockchain.getBlocks().size(), 5);
+        Assert.assertEquals(blockchain.getBlocks().size(), 7);
     }
 
     @Test
     public void severalMiners() {
-        Blockchain blockchain = new Blockchain(2, 10);
+        Blockchain blockchain = new Blockchain(0, 10);
 
         List<Miner> miners = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
