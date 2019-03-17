@@ -2,28 +2,54 @@ package ru.bukharov.blockchain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 
 public class Blockchain implements Serializable {
-    @Setter
-    private int zeros;
+    private static final Block ZERO_BLOCK = new Block(0, 0, "0", 0);
+
+    private final int limit;
     @Getter
     private List<Block> blocks = new ArrayList<>();
+    private List<BlockchainListener> listeners = new ArrayList<>();
+    private int zeros;
 
-    public Blockchain(int zeros) {
+    public Blockchain(int zeros, int limit) {
         this.zeros = zeros;
+        this.limit = limit;
     }
 
-    public void addBlock() {
-        Block block = new Block(blocks.size() + 1, new Date(), getLastHash(), zeros);
+    public synchronized AddBlockResult addBlock(Block block) {
+        if (!block.getPreviousHash().equals(getLastHash())) {
+            return AddBlockResult.INVALID_HASH;
+        } else if (!block.getHash().startsWith(getHashPrefix())) {
+            return AddBlockResult.INVALID_HASH_PREFIX;
+        }
+
         blocks.add(block);
+        BlockchainEvent event = BlockchainEvent.builder()
+                .state(getState())
+                .active(blocks.size() < limit)
+                .build();
+
+        notifyListeners(event);
+        return AddBlockResult.BLOCK_ADDED;
     }
 
-    public boolean validateChain() {
+    public synchronized BlockchainState getState() {
+        return new BlockchainState(getLastBlock(), getHashPrefix());
+    }
+
+    public void registerListener(BlockchainListener listener) {
+        listeners.add(listener);
+    }
+
+    private void notifyListeners(BlockchainEvent event) {
+        listeners.forEach(listener -> listener.notifyEvent(event));
+    }
+
+    private boolean validateChain() {
         if (blocks.size() < 2) {
             return true;
         }
@@ -40,10 +66,18 @@ public class Blockchain implements Serializable {
         return true;
     }
 
+    private String getHashPrefix() {
+        return new String(new char[zeros]).replace('\0', '0');
+    }
+
     private String getLastHash() {
+        return getLastBlock().getHash();
+    }
+
+    private Block getLastBlock() {
         if (blocks.isEmpty()) {
-            return "0";
+            return ZERO_BLOCK;
         }
-        return blocks.get(blocks.size() - 1).getHash();
+        return blocks.get(blocks.size() - 1);
     }
 }

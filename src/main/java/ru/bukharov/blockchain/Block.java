@@ -1,52 +1,32 @@
 package ru.bukharov.blockchain;
 
 import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
+@RequiredArgsConstructor()
 class Block implements Serializable {
-    private long id;
-    private Date date;
-    private String previousHash;
-    private long generationTime;
-    private long magic = 0;
+    final private long id;
+    final private long timestamp;
+    final private String previousHash;
+    final private long magic;
 
-    Block(long id, Date date, String previousHash, int zeros) {
-        this.id = id;
-        this.date = date;
-        this.previousHash = previousHash;
-        generateHash(zeros);
-    }
-
-    private void generateHash(int zeros) {
-        long time = System.currentTimeMillis();
-        String zerosStr = new String(new char[zeros]).replace('\0', '0');
-
-        int testMagic = 0;
-        String input = id  + date.toString() + previousHash;
-        String hash = StringUtils.applySha256(input + testMagic);
-
-        while (!hash.startsWith(zerosStr)) {
-            testMagic++;
-            hash = StringUtils.applySha256(input + testMagic);
-        }
-
-        this.magic = testMagic;
-        this.generationTime = System.currentTimeMillis() - time;
-    }
+    private String minerName;
+    private long generatedTime;
 
     public String getHash() {
-        return StringUtils.applySha256(id  + date.toString() + previousHash + magic);
+        return StringUtils.applySha256(id  + timestamp + previousHash + magic);
     }
 
     public String toString() {
         return "Id: " + getId() + "\n" +
-                "Timestamp: " + getDate().getTime() + "\n" +
+                "Timestamp: " +timestamp + "\n" +
                 "Magic number: " + magic + "\n" +
-                "Hash of the previous block:\n" + getPreviousHash() + "\n" +
-                "Hash of the block: \n" + getHash() + "\n" +
-                "Block was generating for " + generationTime + " seconds";
+                "Hash of the previous block: " + previousHash + "\n" +
+                "Hash of the block: " + getHash() + "\n" +
+                "Miner: " + minerName + "\n" +
+                "Generated time: " + generatedTime + "\n";
     }
 
 }

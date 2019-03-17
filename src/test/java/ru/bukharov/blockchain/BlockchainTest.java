@@ -1,5 +1,7 @@
 package ru.bukharov.blockchain;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -7,32 +9,42 @@ import org.testng.annotations.Test;
 public class BlockchainTest {
 
     @Test
-    public void add5Blocks() {
-        int zeros = 2;
+    public void oneMiner() throws InterruptedException {
+        Blockchain blockchain = new Blockchain(1, 5);
+        Miner miner = new Miner("Miner#1", blockchain);
 
-        Blockchain blockchain = new Blockchain(zeros);
-        for (int i = 0; i < 5; i++) {
-            blockchain.addBlock();
-        }
+        miner.run();
+        miner.join();
 
         printBlockchain(blockchain);
-        Assert.assertTrue(blockchain.validateChain());
+        Assert.assertEquals(blockchain.getBlocks().size(), 5);
     }
 
     @Test
-    public void add5BlocksAndChangeOneBlock() {
-        int zeros = 2;
+    public void severalMiners() {
+        Blockchain blockchain = new Blockchain(2, 10);
 
-        Blockchain blockchain = new Blockchain(zeros);
-        for (int i = 0; i < 5; i++) {
-            blockchain.addBlock();
+        List<Miner> miners = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            miners.add(new Miner("Miner#" + i, blockchain));
         }
 
-        blockchain.getBlocks().get(1).setId(-1);
+        startMiners(miners);
+
         printBlockchain(blockchain);
-        Assert.assertFalse(blockchain.validateChain());
+        Assert.assertEquals(blockchain.getBlocks().size(), 10);
     }
 
+    private void startMiners(List<Miner> miners) {
+        miners.forEach(Miner::start);
+        miners.forEach(miner -> {
+            try {
+                miner.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     private void printBlockchain(Blockchain blockchain) {
         StringBuilder sb = new StringBuilder();
