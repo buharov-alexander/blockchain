@@ -29,14 +29,36 @@ public class BlockchainTest {
             miners.add(new Miner("Miner#" + i, blockchain));
         }
 
-        startMiners(miners);
+        startMiners(miners, new ArrayList<>());
 
         printBlockchain(blockchain);
         Assert.assertEquals(blockchain.getBlocks().size(), 10);
     }
 
-    private void startMiners(List<Miner> miners) {
+    @Test
+    public void severalMinersWithUsers() {
+        Blockchain blockchain = new Blockchain(0, 10);
+
+        List<Miner> miners = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            miners.add(new Miner("Miner#" + i, blockchain));
+        }
+
+        List<User> users = new ArrayList<>();
+        users.add(new User("Sasha", blockchain));
+        users.add(new User("Ghanna", blockchain));
+
+        startMiners(miners, users);
+
+        printBlockchain(blockchain);
+        Assert.assertEquals(blockchain.getBlocks().size(), 10);
+    }
+
+
+    private void startMiners(List<Miner> miners, List<User> users) {
         miners.forEach(Miner::start);
+        users.forEach(User::start);
+
         miners.forEach(miner -> {
             try {
                 miner.join();

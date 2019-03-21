@@ -4,10 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 public class Blockchain implements Serializable {
-    private static final Block ZERO_BLOCK = new Block(0, 0, "0", 0);
+    private static final Block ZERO_BLOCK = new Block(0, 0, "0", 0, new ArrayList<>());
     private static final int SECOND = 1000;
     private static final int LOW_TIME_LIMIT = 1 * SECOND;
     private static final int HIGH_TIME_LIMIT = 10 * SECOND;
@@ -17,9 +18,11 @@ public class Blockchain implements Serializable {
     private List<Block> blocks = new ArrayList<>();
     private List<BlockchainListener> listeners = new ArrayList<>();
     private int zeros;
+    private List<String> messages;
 
     public Blockchain(int zeros, int limit) {
         this.zeros = zeros;
+        this.messages = new ArrayList<>();
         this.limit = limit;
     }
 
@@ -39,11 +42,18 @@ public class Blockchain implements Serializable {
                 .build();
 
         notifyListeners(event);
+        this.messages = new ArrayList<>();
+        BlockchainUtil.saveBlockchain(this, "temp.txt");
         return AddBlockResult.BLOCK_ADDED;
     }
 
     public synchronized BlockchainState getState() {
-        return new BlockchainState(getLastBlock(), getHashPrefix());
+        List<String> messagesForBlock = new ArrayList<>(messages);
+        return new BlockchainState(getLastBlock(), messagesForBlock, getHashPrefix());
+    }
+
+    public synchronized void addData(String message) {
+        messages.add(message);
     }
 
     public void registerListener(BlockchainListener listener) {

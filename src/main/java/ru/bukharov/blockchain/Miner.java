@@ -12,6 +12,7 @@ public class Miner extends Thread implements BlockchainListener {
     private long startGeneration;
 
     public Miner(String name, Blockchain blockchain) {
+        super();
         this.name = name;
         this.blockchain = blockchain;
 
@@ -45,7 +46,7 @@ public class Miner extends Thread implements BlockchainListener {
 
     private Block createBlock() {
         Block lastBlock = blockchainState.getLastBlock();
-        Block block = new Block(lastBlock.getId() + 1, new Date().getTime(), lastBlock.getHash(), magic);
+        Block block = new Block(lastBlock.getId() + 1, new Date().getTime(), lastBlock.getHash(), magic, blockchainState.getData());
 
         block.setMinerName(name);
         block.setGeneratedTime(System.currentTimeMillis() - startGeneration);
